@@ -3,22 +3,21 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="NGENIX TV">
-
-<title>NGENIX TV</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NEON GLOW TV</title>
 
 <style>
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
 
 html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-    background: #000;
+    background: #050000;
     color: white;
     font-family: Arial, sans-serif;
     overflow: hidden;
@@ -27,12 +26,79 @@ html, body {
 body {
     display: flex;
     flex-direction: column;
+    position: relative;
+    isolation: isolate;
 }
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: -30%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 50% 35%,
+        rgba(255,0,25,.23), transparent 42%),
+      radial-gradient(ellipse at 5% 90%,
+        rgba(180,0,0,.22), transparent 40%),
+      radial-gradient(ellipse at 95% 10%,
+        rgba(255,20,20,.16), transparent 38%);
+    filter: blur(35px);
+}
+
+/* ЗАГОЛОВОК */
+
+header {
+    height: 65px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #190000, #080000);
+    border-bottom: 1px solid rgba(255,30,30,.7);
+    color: #fff;
+    font-size: 25px;
+    font-weight: 900;
+    letter-spacing: 7px;
+    text-shadow:
+        0 0 4px #fff,
+        0 0 10px #ff1717,
+        0 0 22px #ff0000,
+        0 0 45px #ff0000;
+    box-shadow:
+        0 5px 20px rgba(255,0,0,.2),
+        0 0 35px rgba(255,0,0,.25);
+}
+
+@keyframes neonPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 8px rgba(255,0,0,.25),
+            0 0 22px rgba(255,0,0,.12);
+    }
+    50% {
+        box-shadow:
+            0 0 15px rgba(255,0,0,.5),
+            0 0 35px rgba(255,0,0,.28);
+    }
+}
+
+header {
+    animation: neonPulse 3s infinite ease-in-out;
+}
+
+/* ЭКРАН */
 
 #player {
     flex: 1;
-    min-height: 150px;
-    background: black;
+    min-height: 120px;
+    position: relative;
+    background: #000;
+    border-bottom: 1px solid #b90000;
+    box-shadow:
+        0 0 12px rgba(255,0,0,.5),
+        0 0 30px rgba(255,0,0,.2),
+        inset 0 0 25px rgba(255,0,0,.12);
 }
 
 video {
@@ -42,30 +108,73 @@ video {
     background: black;
 }
 
+/* КАНАЛЫ */
+
 #channels {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    padding: 10px;
-    max-height: 38vh;
+    gap: 13px;
+    padding: 17px;
+    max-height: 40vh;
     overflow-y: auto;
-    background: #111;
+    -webkit-overflow-scrolling: touch;
+    background:
+        radial-gradient(ellipse at 50% 0%,
+            rgba(160,0,0,.22), transparent 75%),
+        linear-gradient(#100000,#050000);
 }
 
 .channel {
-    min-height: 48px;
-    border: 1px solid #555;
-    border-radius: 8px;
-    background: #292929;
-    color: white;
+    min-height: 57px;
+    border: 1px solid rgba(255,50,50,.65);
+    border-radius: 13px;
+    background: linear-gradient(
+        145deg,
+        rgba(90,0,0,.65),
+        rgba(15,0,0,.95)
+    );
+    color: #ff7777;
     font-size: 16px;
     font-weight: bold;
+    letter-spacing: 1.5px;
+    text-shadow:
+        0 0 5px #ff0000,
+        0 0 12px rgba(255,0,0,.8);
+    box-shadow:
+        0 0 5px rgba(255,0,0,.4),
+        0 0 15px rgba(255,0,0,.18),
+        inset 0 0 12px rgba(255,0,0,.12);
+    transition: all .25s ease;
+}
+
+.channel:active {
+    transform: scale(.95);
+    box-shadow:
+        0 0 15px red,
+        0 0 30px rgba(255,0,0,.6);
 }
 
 .channel.active {
-    background: white;
-    color: black;
+    background: linear-gradient(
+        135deg,
+        #ff3636,
+        #b00000 55%,
+        #5c0000
+    );
+    color: white;
+    border: 1px solid #ffaaaa;
+    text-shadow:
+        0 0 5px white,
+        0 0 12px white,
+        0 0 25px #ff0000;
+    box-shadow:
+        0 0 7px #ff2222,
+        0 0 18px #ff0000,
+        0 0 35px rgba(255,0,0,.65),
+        inset 0 0 15px rgba(255,255,255,.2);
 }
+
+/* ОКНО ЗАПУСКА */
 
 #start {
     position: absolute;
@@ -73,23 +182,61 @@ video {
     inset: 0;
     width: 100%;
     height: 100%;
-    border: 0;
-    background: rgba(0,0,0,.88);
-    color: white;
-    font-size: 22px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 15px;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(100,0,0,.35),
+        rgba(0,0,0,.97) 70%
+    );
 }
 
-#start[hidden] {
-    display: none;
+#start button {
+    padding: 16px 30px;
+    border: 1px solid #ff5555;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg,#e00000,#500000);
+    box-shadow:
+        0 0 10px red,
+        0 0 25px rgba(255,0,0,.6);
+    text-shadow: 0 0 10px white;
+}
+
+#status {
+    color: #ff7777;
+    font-size: 13px;
+    text-shadow: 0 0 10px red;
+    text-align: center;
+    padding: 5px;
 }
 
 @media (orientation: landscape) {
-    body { flex-direction: row; }
+    body {
+        flex-direction: row;
+    }
+
+    header {
+        display: none;
+    }
+
+    #player {
+        width: 72%;
+        height: 100%;
+        flex: none;
+    }
 
     #channels {
-        width: 220px;
+        width: 28%;
         max-height: 100%;
         grid-template-columns: 1fr;
+        align-content: start;
     }
 }
 </style>
@@ -97,106 +244,120 @@ video {
 
 <body>
 
+<header>NEON GLOW TV</header>
+
 <div id="player">
-    <video id="tv"
+    <video id="video"
         autoplay
         playsinline
         webkit-playsinline
         preload="auto">
     </video>
+
+    <div id="start">
+        <div style="font-size:20px;letter-spacing:4px;text-shadow:0 0 15px red">
+            NEON GLOW TV
+        </div>
+        <button onclick="startWithSound()">
+            ▶ ВКЛЮЧИТЬ СО ЗВУКОМ
+        </button>
+        <div id="status">Нажмите для запуска эфира</div>
+    </div>
 </div>
 
 <div id="channels"></div>
 
-<button id="start" hidden>
-    Нажмите для запуска эфира со звуком
-</button>
-
 <script>
-
-var channels = [
-["ЧЕ","https://zabava-htlive.cdn.ngenix.net/hls/CH_PERETZ/variant.m3u8"],
-["СТС","https://zabava-htlive.cdn.ngenix.net/hls/CH_STS/variant.m3u8"],
-["ТНТ","https://zabava-htlive.cdn.ngenix.net/hls/CH_TNT/variant.m3u8"],
-["ТВ3","https://zabava-htlive.cdn.ngenix.net/hls/CH_TV3/variant.m3u8"],
-["РЕН ТВ","https://zabava-htlive.cdn.ngenix.net/hls/CH_RENTV/variant.m3u8"],
-["ТНТ4","https://zabava-htlive.cdn.ngenix.net/hls/CH_TNT4/variant.m3u8"],
-["Пятница!","https://zabava-htlive.cdn.ngenix.net/hls/CH_PYATNIZZA/variant.m3u8"],
-["СТС Love","https://zabava-htlive.cdn.ngenix.net/hls/CH_STSLOVE/variant.m3u8"],
-["Первый канал","http://s18209.cdn.ngenix.net/hls/CH_R03_1TV/playlist.m3u8"],
-["Россия 1","http://s18209.cdn.ngenix.net/hls/CH_R04_ROSSIA1/playlist.m3u8"],
-["НТВ","https://zabava-htlive.cdn.ngenix.net/hls/CH_NTV/variant.m3u8"],
-["Россия 24","http://s18209.cdn.ngenix.net/hls/CH_R01_ROSSIA24/playlist.m3u8"],
-["ОТР","https://zabava-htlive.cdn.ngenix.net/hls/CH_OTR/variant.m3u8"],
-["Звезда","http://s18209.cdn.ngenix.net/hls/CH_R03_ZVEZDA/playlist.m3u8"],
-["Пятый канал","http://zabava-htlive.cdn.ngenix.net/hls/CH_5TV/variant.m3u8"],
-["Россия К","http://s18209.cdn.ngenix.net/hls/CH_R02_ROSSIAK/playlist.m3u8"]
+const channels = [
+    ["ЧЕ", "https://zabava-htlive.cdn.ngenix.net/hls/CH_PERETZ/variant.m3u8"],
+    ["СТС", "https://zabava-htlive.cdn.ngenix.net/hls/CH_STS/variant.m3u8"],
+    ["ТНТ", "https://zabava-htlive.cdn.ngenix.net/hls/CH_TNT/variant.m3u8"],
+    ["ТВ3", "https://zabava-htlive.cdn.ngenix.net/hls/CH_TV3/variant.m3u8"],
+    ["РЕН ТВ", "https://zabava-htlive.cdn.ngenix.net/hls/CH_RENTV/variant.m3u8"],
+    ["ТНТ4", "https://zabava-htlive.cdn.ngenix.net/hls/CH_TNT4/variant.m3u8"],
+    ["ПЯТНИЦА", "https://zabava-htlive.cdn.ngenix.net/hls/CH_PYATNIZZA/variant.m3u8"],
+    ["СТС LOVE", "https://zabava-htlive.cdn.ngenix.net/hls/CH_STSLOVE/variant.m3u8"],
+    ["ПЕРВЫЙ", "http://s18209.cdn.ngenix.net/hls/CH_R03_1TV/playlist.m3u8"],
+    ["РОССИЯ 1", "http://s18209.cdn.ngenix.net/hls/CH_R04_ROSSIA1/playlist.m3u8"],
+    ["НТВ", "https://zabava-htlive.cdn.ngenix.net/hls/CH_NTV/variant.m3u8"],
+    ["РОССИЯ 24", "http://s18209.cdn.ngenix.net/hls/CH_R01_ROSSIA24/playlist.m3u8"],
+    ["ОТР", "https://zabava-htlive.cdn.ngenix.net/hls/CH_OTR/variant.m3u8"],
+    ["ЗВЕЗДА", "http://s18209.cdn.ngenix.net/hls/CH_R03_ZVEZDA/playlist.m3u8"],
+    ["ПЯТЫЙ КАНАЛ", "http://zabava-htlive.cdn.ngenix.net/hls/CH_5TV/playlist.m3u8"],
+    ["РОССИЯ К", "http://s18209.cdn.ngenix.net/hls/CH_R02_ROSSIAK/playlist.m3u8"]
 ];
 
-var tv = document.getElementById("tv");
-var list = document.getElementById("channels");
-var startButton = document.getElementById("start");
+const video = document.getElementById("video");
+const startScreen = document.getElementById("start");
+const statusText = document.getElementById("status");
+const channelBox = document.getElementById("channels");
 
-var currentChannel = 0;
+let currentChannel = 0;
+
+function showStart(message) {
+    startScreen.style.display = "flex";
+    statusText.textContent = message;
+}
+
+function hideStart() {
+    startScreen.style.display = "none";
+}
 
 function playChannel(index) {
     currentChannel = index;
 
-    document.querySelectorAll(".channel").forEach(function(btn, i) {
-        btn.classList.toggle("active", i === index);
+    document.querySelectorAll(".channel").forEach((button, i) => {
+        button.classList.toggle("active", i === index);
     });
 
-    tv.pause();
-    tv.src = channels[index][1];
-    tv.muted = false;
-    tv.load();
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
 
-    var p = tv.play();
+    video.src = channels[index][1];
+    video.load();
 
-    if (p && p.catch) {
-        p.catch(function() {
-            startButton.hidden = false;
-        });
-    }
+    video.play().then(() => {
+        hideStart();
+    }).catch(() => {
+        showStart("Нажмите для запуска эфира со звуком");
+    });
 }
 
-channels.forEach(function(channel, index) {
-    var button = document.createElement("button");
+function startWithSound() {
+    video.muted = false;
+    video.volume = 1;
 
+    video.play().then(() => {
+        hideStart();
+    }).catch(() => {
+        statusText.textContent = "Не удалось запустить эфир. Проверьте ссылку.";
+    });
+}
+
+channels.forEach((channel, index) => {
+    const button = document.createElement("button");
     button.className = "channel";
     button.textContent = channel[0];
-
-    button.onclick = function() {
-        playChannel(index);
-    };
-
-    list.appendChild(button);
+    button.onclick = () => playChannel(index);
+    channelBox.appendChild(button);
 });
 
-startButton.onclick = function() {
-    startButton.hidden = true;
-    tv.muted = false;
+/* Запуск первого канала */
 
-    var p = tv.play();
-
-    if (p && p.catch) {
-        p.catch(function() {
-            startButton.hidden = false;
-        });
-    }
-};
-
-tv.addEventListener("playing", function() {
-    startButton.hidden = true;
-});
-
-tv.addEventListener("error", function() {
-    startButton.hidden = false;
-};
-
-// Автоматический запуск ЧЕ со звуком
+video.muted = false;
+video.volume = 1;
 playChannel(0);
 
+/* Обработка ошибок */
+
+video.addEventListener("error", () => {
+    showStart("Ошибка потока. Попробуйте другой канал.");
+});
+
+video.addEventListener("playing", hideStart);
+
 </script>
+
 </body>
 </html>
