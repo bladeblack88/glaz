@@ -3,150 +3,104 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="ЧЕ ТВ">
-<title>ЧЕ ТВ — тест потоков</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="ЧЕ">
+
+<title>Телеканал ЧЕ</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#090909;color:white;font-family:Arial}
-header{padding:15px;text-align:center;background:#191919;font-size:23px;font-weight:bold}
-.logo{color:#f22}
-#status{text-align:center;padding:12px;color:#bbb;font-size:13px}
-#screen{height:52vh;min-height:220px;background:#000}
-video,iframe{width:100%;height:100%;border:0;background:#000}
-video{object-fit:contain}
-#buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:12px}
-button{background:#292929;color:white;border:1px solid #555;border-radius:8px;padding:14px 5px;font-size:14px}
-button.active{background:#b91e1e;border-color:#f55}
-.actions{display:flex;gap:10px;padding:0 12px 12px}
-.actions button{flex:1}
-.info{padding:12px;color:#aaa;font-size:13px;line-height:1.5}
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+}
+
+#play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 15px 30px;
+    font-size: 20px;
+    border: none;
+    border-radius: 10px;
+    background: white;
+    color: black;
+}
 </style>
 </head>
+
 <body>
-<header><span class="logo">ЧЕ!</span> ТВ</header>
-<div id="status">Выбери трансляцию</div>
 
-<div id="screen">
-<video id="video" controls playsinline
- x-webkit-airplay="allow"></video>
-<iframe id="frame" style="display:none"
- allow="autoplay; fullscreen; picture-in-picture"
- allowfullscreen></iframe>
-</div>
+<video id="tv"
+       autoplay
+       muted
+       playsinline
+       webkit-playsinline
+       controls>
+</video>
 
-<div id="buttons"></div>
-
-<div class="actions">
-<button onclick="openCurrent()">Открыть отдельно</button>
-<button onclick="reloadCurrent()">Обновить</button>
-</div>
-
-<div class="info">
-Выбирай источники по очереди. Для прямых потоков
-нажми Play в видеоплеере. Если поток не работает,
-попробуй официальный плеер.
-<br><br>
-Зелёный статус не означает, что трансляция уже проверена:
-изображение и звук нужно проверить самостоятельно.
-</div>
+<button id="play" onclick="startTV()">
+    ▶ СМОТРЕТЬ ЧЕ
+</button>
 
 <script>
-const sources=[
- {
-  name:"Официальный плеер ЧЕ",
-  type:"frame",
-  url:"https://player.mediavitrina.ru/che/che_web/player.html"
- },
- {
-  name:"NGENIX — 540p",
-  type:"video",
-  url:"https://zabava-htlive.cdn.ngenix.net/hls/CH_PERETZ/variant.m3u8"
- },
- {
-  name:"IP поток №1",
-  type:"video",
-  url:"http://31.148.48.15/Che/index.m3u8"
- },
- {
-  name:"IP поток №2",
-  type:"video",
-  url:"http://176.118.197.101/Che/index.m3u8"
- },
- {
-  name:"Mnogotv",
-  type:"frame",
-  url:"https://mnogotv.com/tv/che/"
- },
- {
-  name:"Smotret TV",
-  type:"frame",
-  url:"https://smotret.tv/che"
- },
- {
-  name:"Lime HD",
-  type:"frame",
-  url:"https://limehd.tv/channel/che"
- }
-];
+var stream =
+"https://zabava-htlive.cdn.ngenix.net/hls/CH_PERETZ/variant.m3u8";
 
-let selected=0;
-const video=document.getElementById("video");
-const frame=document.getElementById("frame");
-const status=document.getElementById("status");
-const buttons=document.getElementById("buttons");
+var tv = document.getElementById("tv");
+var button = document.getElementById("play");
 
-sources.forEach((s,i)=>{
- const b=document.createElement("button");
- b.textContent=s.name;
- b.onclick=()=>selectSource(i);
- buttons.appendChild(b);
-});
+function startTV() {
+    tv.src = stream;
+    tv.muted = false;
+    tv.load();
 
-function selectSource(i){
- selected=i;
- video.pause();
- video.removeAttribute("src");
- video.load();
- frame.src="about:blank";
+    var p = tv.play();
 
- video.style.display="none";
- frame.style.display="none";
-
- const s=sources[i];
- status.textContent="Источник: "+s.name;
-
- document.querySelectorAll("#buttons button")
- .forEach((b,n)=>b.classList.toggle("active",n===i));
-
- if(s.type==="video"){
-  video.style.display="block";
-  video.src=s.url;
-  video.load();
- }else{
-  frame.style.display="block";
-  frame.src=s.url;
- }
+    if (p && p.catch) {
+        p.catch(function() {
+            button.style.display = "block";
+        });
+    }
 }
 
-function openCurrent(){
- window.open(sources[selected].url,"_blank");
+function autoStart() {
+    tv.src = stream;
+    tv.muted = true;
+
+    var p = tv.play();
+
+    if (p && p.catch) {
+        p.catch(function() {
+            button.style.display = "block";
+        });
+    }
 }
 
-function reloadCurrent(){
- selectSource(selected);
-}
-
-video.addEventListener("error",()=>{
- status.textContent="Ошибка потока. Попробуй другой источник.";
+tv.addEventListener("playing", function() {
+    button.style.display = "none";
 });
 
-video.addEventListener("playing",()=>{
- status.textContent="Воспроизведение началось";
+tv.addEventListener("error", function() {
+    button.style.display = "block";
 });
 
-selectSource(0);
+autoStart();
 </script>
+
 </body>
 </html>
