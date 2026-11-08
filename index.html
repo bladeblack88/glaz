@@ -3,121 +3,202 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-
-<title>ЧЕ ТВ</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="ЧЕ ТВ">
 
+<title>ЧЕ ТВ — Live</title>
+
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+* {box-sizing:border-box}
+body {
+ margin:0;
+ background:#080808;
+ color:white;
+ font-family:Arial,sans-serif;
 }
-
-html, body {
-    width: 100%;
-    height: 100%;
-    background: #000;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-}
-
-#tv {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: #000;
-}
-
 header {
-    height: 45px;
-    min-height: 45px;
-    background: #171717;
-    color: white;
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    font-size: 19px;
-    font-weight: bold;
+ background:#181818;
+ padding:15px;
+ text-align:center;
+ font-size:23px;
+ font-weight:bold;
 }
-
-.logo {
-    color: #ff3030;
-    margin-right: 8px;
+.logo {color:#ff3030}
+.status {
+ text-align:center;
+ color:#aaa;
+ padding:12px;
+ font-size:13px;
 }
-
-#player {
-    flex: 1;
-    position: relative;
-    width: 100%;
-    background: black;
+#screen {
+ width:100%;
+ height:55vh;
+ min-height:230px;
+ background:#000;
 }
-
 iframe {
-    width: 100%;
-    height: 100%;
-    border: 0;
-    position: absolute;
-    top: 0;
-    left: 0;
+ width:100%;
+ height:100%;
+ border:0;
+ background:#000;
 }
-
-footer {
-    min-height: 55px;
-    background: #171717;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.buttons {
+ padding:12px;
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:9px;
 }
-
 button {
-    background: #ed2424;
-    border: none;
-    border-radius: 7px;
-    color: white;
-    padding: 11px 22px;
-    font-size: 16px;
-    font-weight: bold;
+ background:#262626;
+ border:1px solid #444;
+ color:white;
+ padding:14px 7px;
+ border-radius:8px;
+ font-size:14px;
 }
-
-@media (orientation: landscape) {
-    header {
-        display: none;
-    }
+button.active {
+ background:#c82020;
+ border-color:#ff5555;
+}
+.actions {
+ display:flex;
+ gap:10px;
+ padding:12px;
+}
+.actions button {flex:1;background:#b51d1d}
+.info {
+ padding:12px 17px;
+ color:#aaa;
+ font-size:13px;
+ line-height:1.6;
 }
 </style>
 </head>
 
 <body>
 
-<div id="tv">
-
 <header>
-    <span class="logo">ЧЕ!</span>
-    ТЕЛЕВИЗОР
+<span class="logo">ЧЕ!</span> ТВ
 </header>
 
-<div id="player">
-    <iframe
-        src="https://rutube.ru/play/embed/5bbff90167d1b1d88fda92376ec7a651"
-        allow="autoplay; fullscreen; picture-in-picture"
-        allowfullscreen
-        webkitallowfullscreen>
-    </iframe>
+<div class="status" id="status">
+Выбери источник трансляции
 </div>
 
-<footer>
-    <button onclick="window.location.href='https://rutube.ru/live/video/5bbff90167d1b1d88fda92376ec7a651/'">
-        Открыть эфир на RUTUBE
-    </button>
-</footer>
-
+<div id="screen">
+<iframe id="player"
+src="about:blank"
+allow="autoplay; fullscreen; picture-in-picture"
+allowfullscreen></iframe>
 </div>
+
+<div class="buttons" id="buttons"></div>
+
+<div class="actions">
+<button onclick="openSource()">Открыть отдельно</button>
+<button onclick="reloadSource()">Перезагрузить</button>
+</div>
+
+<div class="info">
+<b>Проверка эфира</b><br>
+Выбирай разные источники. Если видео не появляется,
+нажми «Открыть отдельно». Некоторые сайты запрещают
+воспроизведение внутри других страниц.
+<br><br>
+Важно: браузер не может достоверно определить,
+идёт ли внутри iframe настоящее видео.
+Проверяй изображение и звук самостоятельно.
+</div>
+
+<script>
+
+const sources = [
+ {
+  name:"RUTUBE — эфир",
+  url:"https://rutube.ru/play/embed/5bbff90167d1b1d88fda92376ec7a651",
+  external:"https://rutube.ru/live/video/5bbff90167d1b1d88fda92376ec7a651/"
+ },
+ {
+  name:"ЧЕ — официальный сайт",
+  url:"https://chetv.ru/online",
+  external:"https://chetv.ru/online"
+ },
+ {
+  name:"RUTUBE — все эфиры",
+  url:"https://rutube.ru/feeds/live/",
+  external:"https://rutube.ru/feeds/live/"
+ },
+ {
+  name:"НТВ-ПЛЮС",
+  url:"https://ntvplus.tv/channel/che-146",
+  external:"https://ntvplus.tv/channel/che-146"
+ },
+ {
+  name:"PREMIER",
+  url:"https://premier.one/tv/che",
+  external:"https://premier.one/tv/che"
+ },
+ {
+  name:"Федеральное ТВ",
+  url:"https://federal.tv/tv/che",
+  external:"https://federal.tv/tv/che"
+ },
+ {
+  name:"START",
+  url:"https://start.ru/channel/che",
+  external:"https://start.ru/channel/che"
+ }
+];
+
+let selected = 0;
+
+const player = document.getElementById("player");
+const status = document.getElementById("status");
+const buttons = document.getElementById("buttons");
+
+sources.forEach((source,index) => {
+ const button = document.createElement("button");
+ button.textContent = source.name;
+
+ button.onclick = () => selectSource(index);
+
+ buttons.appendChild(button);
+});
+
+function selectSource(index) {
+ selected = index;
+
+ player.src = "about:blank";
+
+ setTimeout(() => {
+  player.src = sources[index].url;
+ },150);
+
+ status.textContent =
+ "Источник: " + sources[index].name;
+
+ document.querySelectorAll(".buttons button")
+ .forEach((button,i) => {
+  button.classList.toggle("active",i === index);
+ });
+}
+
+function openSource() {
+ window.open(
+  sources[selected].external,
+  "_blank"
+ );
+}
+
+function reloadSource() {
+ selectSource(selected);
+}
+
+selectSource(0);
+
+</script>
 
 </body>
 </html>
