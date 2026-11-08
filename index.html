@@ -3,8 +3,20 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
 <title>NEON GLOW TV</title>
+
+<!-- Полноэкранный режим iPad -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="NEON GLOW TV">
+
+<meta name="theme-color" content="#050000">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
 
 <style>
 * {
@@ -46,8 +58,6 @@ body::before {
     filter: blur(35px);
 }
 
-/* ЗАГОЛОВОК */
-
 header {
     height: 65px;
     flex-shrink: 0;
@@ -68,6 +78,7 @@ header {
     box-shadow:
         0 5px 20px rgba(255,0,0,.2),
         0 0 35px rgba(255,0,0,.25);
+    animation: neonPulse 3s infinite ease-in-out;
 }
 
 @keyframes neonPulse {
@@ -82,12 +93,6 @@ header {
             0 0 35px rgba(255,0,0,.28);
     }
 }
-
-header {
-    animation: neonPulse 3s infinite ease-in-out;
-}
-
-/* ЭКРАН */
 
 #player {
     flex: 1;
@@ -107,8 +112,6 @@ video {
     object-fit: contain;
     background: black;
 }
-
-/* КАНАЛЫ */
 
 #channels {
     display: grid;
@@ -173,8 +176,6 @@ video {
         0 0 35px rgba(255,0,0,.65),
         inset 0 0 15px rgba(255,255,255,.2);
 }
-
-/* ОКНО ЗАПУСКА */
 
 #start {
     position: absolute;
@@ -292,8 +293,6 @@ const startScreen = document.getElementById("start");
 const statusText = document.getElementById("status");
 const channelBox = document.getElementById("channels");
 
-let currentChannel = 0;
-
 function showStart(message) {
     startScreen.style.display = "flex";
     statusText.textContent = message;
@@ -304,8 +303,6 @@ function hideStart() {
 }
 
 function playChannel(index) {
-    currentChannel = index;
-
     document.querySelectorAll(".channel").forEach((button, i) => {
         button.classList.toggle("active", i === index);
     });
@@ -343,20 +340,15 @@ channels.forEach((channel, index) => {
     channelBox.appendChild(button);
 });
 
-/* Запуск первого канала */
-
 video.muted = false;
 video.volume = 1;
 playChannel(0);
-
-/* Обработка ошибок */
 
 video.addEventListener("error", () => {
     showStart("Ошибка потока. Попробуйте другой канал.");
 });
 
 video.addEventListener("playing", hideStart);
-
 </script>
 
 </body>
