@@ -3,11 +3,17 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0,
-      maximum-scale=1.0, user-scalable=no">
 
-<title>IPTV 16 Channels</title>
+<meta name="viewport"
+content="width=device-width, initial-scale=1,
+maximum-scale=1, user-scalable=no, viewport-fit=cover">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style"
+content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IPTV">
+
+<title>IPTV SMART 16</title>
 
 <style>
 * {
@@ -21,14 +27,39 @@ html, body {
     height: 100%;
     overflow: hidden;
     background: #000;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+#header {
+    height: 38px;
+    padding: 0 7px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #151515;
+    font-size: 11px;
+}
+
+#info {
+    color: #00e88a;
+}
+
+button {
+    background: #167b51;
+    color: white;
+    border: 0;
+    border-radius: 4px;
+    padding: 7px 10px;
+    font-size: 11px;
 }
 
 #grid {
-    width: 100vw;
-    height: 100vh;
+    height: calc(100% - 38px);
+    width: 100%;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr);
     gap: 2px;
     background: #222;
 }
@@ -37,91 +68,445 @@ html, body {
     position: relative;
     overflow: hidden;
     background: #000;
+    min-width: 0;
+    min-height: 0;
 }
 
 video {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background: #000;
+    background: black;
 }
 
-.number {
+.channel-name {
     position: absolute;
     top: 3px;
-    left: 4px;
-    color: white;
-    font: 12px Arial;
-    background: rgba(0,0,0,0.65);
-    padding: 3px 5px;
+    left: 3px;
     z-index: 2;
+    padding: 3px 5px;
+    font-size: 10px;
+    color: white;
+    background: rgba(0,0,0,.7);
     pointer-events: none;
+}
+
+.channel-status {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00e88a;
+    background: #080808;
+    font-size: 12px;
+    text-align: center;
+    pointer-events: none;
+}
+
+#empty {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 13px;
+    text-align: center;
+    padding: 20px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="grid"></div>
+<div id="header">
+    <span>IPTV SMART 16</span>
+    <span id="info">ГОТОВ</span>
+    <button id="start">START SCAN</button>
+</div>
+
+<div id="grid">
+    <div id="empty">Нажми START SCAN</div>
+</div>
 
 <script>
 
-// ВСТАВЬТЕ СЮДА СВОИ IPTV M3U8 ССЫЛКИ
+// =====================================
+// СПИСОК КАНАЛОВ
+// =====================================
 
-const channels = [
-    "https://example.com/channel1.m3u8",
-    "https://example.com/channel2.m3u8",
-    "https://example.com/channel3.m3u8",
-    "https://example.com/channel4.m3u8",
-    "https://example.com/channel5.m3u8",
-    "https://example.com/channel6.m3u8",
-    "https://example.com/channel7.m3u8",
-    "https://example.com/channel8.m3u8",
-    "https://example.com/channel9.m3u8",
-    "https://example.com/channel10.m3u8",
-    "https://example.com/channel11.m3u8",
-    "https://example.com/channel12.m3u8",
-    "https://example.com/channel13.m3u8",
-    "https://example.com/channel14.m3u8",
-    "https://example.com/channel15.m3u8",
-    "https://example.com/channel16.m3u8"
+var channels = [
+
+{
+name: "1Almere TV",
+url: "https://d3472rjicrodic.cloudfront.net/nlpo/clr-nlpo/709d5260/index.m3u8"
+},
+{
+name: "1Twente TV",
+url: "https://ms7.mx-cd.net/dtv-11/198-989148/1Twente_TV.smil/chunklist_w954512639_b4292608_slNLD.m3u8"
+},
+{
+name: "A1 TV",
+url: "https://stream.a1mediagroep.nl/hls/a1tv.m3u8"
+},
+{
+name: "Altena TV",
+url: "https://dnx1f4sl30ba2.cloudfront.net/nlpo/clr-nlpo/altenatv/index.m3u8"
+},
+{
+name: "Assen TV",
+url: "https://takeoff.jetstre.am/?account=OmroepAssen&file=OmroepAssenTV/playlist.m3u8&output=playlist.m3u8&protocol=https&service=webdav&type=live"
+},
+{
+name: "AT5",
+url: "https://takeoff.jetstre.am/?account=atvijf&file=live&output=playlist.m3u8&protocol=https&service=wowza&type=live"
+},
+{
+name: "BEAT TV",
+url: "https://tv.beatfm.nl/live.m3u8"
+},
+{
+name: "BR6 TV",
+url: "https://58c04fb1d143f.streamlock.net/slob/slob/playlist.m3u8"
+},
+{
+name: "BTL TV",
+url: "https://livecdn.live247stream.com/btl/tv/playlist.m3u8"
+},
+{
+name: "Dance TV",
+url: "https://m1b2.worldcast.tv/dancetelevisionone/2/dancetelevisionone.m3u8"
+},
+{
+name: "DeepHouse",
+url: "https://eu-nl-012.worldcast.tv/dancetelevisiontwo/dancetelevisiontwo.m3u8"
+},
+{
+name: "Helmond",
+url: "https://ms2.mx-cd.net/tv/228-1864150/Omroep_Helmond.smil/playlist.m3u8"
+},
+{
+name: "DTV Den Bosch",
+url: "https://rrr.sz.xlcdn.com/?account=dtvmaasland&file=dtv2&output=playlist.m3u8&protocol=https&service=wowza&type=live"
+},
+{
+name: "DTV Maashorst",
+url: "https://rrr.sz.xlcdn.com/?account=dtvmaasland&file=dtv3&output=playlist.m3u8&protocol=https&service=wowza&type=live"
+},
+{
+name: "Haarlem105",
+url: "https://d2qm50imcbcfqx.cloudfront.net/nlpo/clr-nlpo/haarlem105/index.m3u8"
+},
+{
+name: "NH Nieuws",
+url: "https://takeoff.jetstre.am/?account=nhnieuws&file=live&output=playlist.m3u8&protocol=https&service=wowza&type=live"
+}
+
 ];
 
-const grid = document.getElementById("grid");
+// =====================================
+// НАСТРОЙКИ
+// =====================================
 
-channels.forEach((url, index) => {
+var TEST_TIMEOUT = 15000;
+var RETRY_INTERVAL = 60000;
 
-    const box = document.createElement("div");
+var grid = document.getElementById("grid");
+var info = document.getElementById("info");
+
+var states = [];
+var position = 0;
+var scanRunning = false;
+var retryTimer = null;
+var scanGeneration = 0;
+
+// =====================================
+// ИНФОРМАЦИЯ
+// =====================================
+
+function updateInfo() {
+
+    var working = 0;
+
+    states.forEach(function(s) {
+        if (s.status === "working") working++;
+    });
+
+    info.textContent =
+        "РАБОТАЕТ: " + working + "/" + channels.length;
+}
+
+// =====================================
+// СОЗДАНИЕ ВИДЕО
+// =====================================
+
+function createPlayer(index) {
+
+    var ch = channels[index];
+
+    var box = document.createElement("div");
     box.className = "channel";
 
-    const label = document.createElement("div");
-    label.className = "number";
-    label.textContent = "CH " + (index + 1);
+    var label = document.createElement("div");
+    label.className = "channel-name";
+    label.textContent = ch.name;
 
-    const video = document.createElement("video");
+    var status = document.createElement("div");
+    status.className = "channel-status";
+    status.textContent = "ПРОВЕРКА...";
 
-    video.src = url;
-    video.autoplay = true;
+    var video = document.createElement("video");
+
     video.muted = true;
     video.defaultMuted = true;
+    video.autoplay = false;
     video.playsInline = true;
-    video.setAttribute("webkit-playsinline", "");
-    video.setAttribute("muted", "");
     video.preload = "none";
 
-    video.addEventListener("error", () => {
-        console.log("Ошибка канала " + (index + 1));
-    });
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
 
     box.appendChild(video);
+    box.appendChild(status);
     box.appendChild(label);
-    grid.appendChild(box);
 
-    video.play().catch(error => {
-        console.log("Не удалось запустить канал " + (index + 1));
+    return {
+        box: box,
+        video: video,
+        status: status
+    };
+}
+
+// =====================================
+// ПРОВЕРКА ОДНОГО КАНАЛА
+// =====================================
+
+function testChannel(index, generation, callback) {
+
+    if (generation !== scanGeneration) return;
+
+    var ch = channels[index];
+
+    var player = createPlayer(index);
+
+    states[index].status = "testing";
+    states[index].player = player;
+
+    var empty = document.getElementById("empty");
+    if (empty) empty.remove();
+
+    // Временно показываем тестируемый канал
+    grid.appendChild(player.box);
+
+    updateInfo();
+
+    var finished = false;
+    var timeout;
+
+    function finish(success) {
+
+        if (finished) return;
+
+        finished = true;
+        clearTimeout(timeout);
+
+        player.video.onplaying = null;
+        player.video.onerror = null;
+        player.video.onloadeddata = null;
+
+        if (success) {
+
+            states[index].status = "working";
+            player.status.style.display = "none";
+
+            // Следим за потерей потока
+            player.video.onerror = function() {
+                removeFailed(index);
+            };
+
+        } else {
+
+            states[index].status = "failed";
+
+            player.video.pause();
+            player.video.removeAttribute("src");
+            player.video.load();
+
+            if (player.box.parentNode) {
+                player.box.parentNode.removeChild(player.box);
+            }
+
+            states[index].player = null;
+        }
+
+        updateInfo();
+
+        if (callback) callback(success);
+    }
+
+    player.video.onplaying = function() {
+        finish(true);
+    };
+
+    player.video.onerror = function() {
+        finish(false);
+    };
+
+    timeout = setTimeout(function() {
+        finish(false);
+    }, TEST_TIMEOUT);
+
+    player.video.src = ch.url;
+    player.video.load();
+
+    var result = player.video.play();
+
+    if (result && result.catch) {
+        result.catch(function() {
+            finish(false);
+        });
+    }
+}
+
+// =====================================
+// УДАЛЕНИЕ НЕРАБОЧЕГО КАНАЛА
+// =====================================
+
+function removeFailed(index) {
+
+    var state = states[index];
+
+    if (!state || state.status !== "working") return;
+
+    state.status = "failed";
+
+    if (state.player) {
+
+        state.player.video.pause();
+
+        if (state.player.box.parentNode) {
+            state.player.box.parentNode.removeChild(
+                state.player.box
+            );
+        }
+
+        state.player = null;
+    }
+
+    updateInfo();
+}
+
+// =====================================
+// ПОСЛЕДОВАТЕЛЬНОЕ СКАНИРОВАНИЕ
+// =====================================
+
+function scanNext(generation) {
+
+    if (generation !== scanGeneration) return;
+
+    if (position >= channels.length) {
+
+        scanRunning = false;
+
+        info.textContent += " | ГОТОВО";
+
+        return;
+    }
+
+    var index = position++;
+
+    testChannel(index, generation, function() {
+
+        // Небольшая пауза между проверками
+        setTimeout(function() {
+            scanNext(generation);
+        }, 700);
+
+    });
+}
+
+// =====================================
+// ПОВТОРНАЯ ПРОВЕРКА
+// =====================================
+
+function retryFailed() {
+
+    if (scanRunning) return;
+
+    var failed = [];
+
+    states.forEach(function(state, index) {
+        if (state.status === "failed") {
+            failed.push(index);
+        }
     });
 
-});
+    if (failed.length === 0) return;
+
+    scanRunning = true;
+
+    var generation = scanGeneration;
+
+    function next(i) {
+
+        if (generation !== scanGeneration) return;
+
+        if (i >= failed.length) {
+            scanRunning = false;
+            return;
+        }
+
+        testChannel(failed[i], generation, function() {
+            setTimeout(function() {
+                next(i + 1);
+            }, 700);
+        });
+    }
+
+    next(0);
+}
+
+// =====================================
+// ПОЛНЫЙ ЗАПУСК
+// =====================================
+
+function startScan() {
+
+    scanGeneration++;
+
+    var generation = scanGeneration;
+
+    clearTimeout(retryTimer);
+
+    scanRunning = true;
+    position = 0;
+
+    states = channels.map(function() {
+        return {
+            status: "waiting",
+            player: null
+        };
+    });
+
+    grid.innerHTML = "";
+
+    info.textContent = "НАЧИНАЮ ПРОВЕРКУ";
+
+    scanNext(generation);
+
+    retryTimer = setInterval(function() {
+        retryFailed();
+    }, RETRY_INTERVAL);
+}
+
+// =====================================
+// КНОПКА ЗАПУСКА
+// =====================================
+
+document.getElementById("start").onclick = function() {
+    startScan();
+};
 
 </script>
 
