@@ -7,99 +7,302 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="ЧЕ">
+<meta name="apple-mobile-web-app-title" content="NGENIX TV">
 
-<title>Телеканал ЧЕ</title>
+<title>NGENIX TV</title>
 
 <style>
+* {
+    box-sizing: border-box;
+}
+
 html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-    background: #000;
+    background: #080808;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
+}
+
+header {
+    padding: 12px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    background: #151515;
+}
+
+#player {
+    flex: 1;
+    min-height: 150px;
+    background: black;
+    position: relative;
 }
 
 video {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background: #000;
+    background: black;
 }
 
-#play {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 15px 30px;
-    font-size: 20px;
-    border: none;
-    border-radius: 10px;
+#channels {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 10px;
+    max-height: 38vh;
+    overflow-y: auto;
+    background: #111;
+}
+
+.channel {
+    min-height: 48px;
+    border: 1px solid #555;
+    border-radius: 8px;
+    background: #292929;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.channel.active {
     background: white;
     color: black;
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    background: #111;
+}
+
+.controls button {
+    flex: 1;
+    height: 44px;
+    border: 1px solid #555;
+    border-radius: 8px;
+    background: #292929;
+    color: white;
+    font-size: 15px;
+}
+
+@media (orientation: landscape) {
+    body {
+        flex-direction: row;
+    }
+
+    header {
+        display: none;
+    }
+
+    #channels {
+        width: 220px;
+        max-height: 100%;
+        grid-template-columns: 1fr;
+    }
+
+    .controls {
+        display: none;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<video id="tv"
-       autoplay
-       muted
-       playsinline
-       webkit-playsinline
-       controls>
-</video>
+<header>NGENIX TV</header>
 
-<button id="play" onclick="startTV()">
-    ▶ СМОТРЕТЬ ЧЕ
-</button>
+<div id="player">
+    <video id="tv"
+        controls
+        autoplay
+        muted
+        playsinline
+        webkit-playsinline>
+    </video>
+</div>
+
+<div id="channels"></div>
+
+<div class="controls">
+    <button onclick="enableSound()">🔊 Звук</button>
+    <button onclick="fullscreen()">⛶ На весь экран</button>
+</div>
 
 <script>
-var stream =
-"https://zabava-htlive.cdn.ngenix.net/hls/CH_PERETZ/variant.m3u8";
+
+// СПИСОК ТЕЛЕКАНАЛОВ
+
+var channels = [
+
+{
+name: "ЧЕ",
+url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_PERETZ/variant.m3u8"
+},
+
+{
+name: "СТС",
+url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_STS/variant.m3u8"
+},
+
+{
+name: "ТНТ",
+url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_TNT/variant.m3u8"
+},
+
+{
+name: "ТВ3",
+url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_TV3/variant.m3u8"
+},
+
+{
+name: "РЕН ТВ",
+url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_RENTV/variant.m3u8"
+},
+
+{
+name: "ТНТ4",
+url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_TNT4/variant.m3u8"
+},
+
+{
+name: "Пятница!",
+url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_PYATNIZZA/variant.m3u8"
+},
+
+{
+name: "СТС Love",
+url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_STSLOVE/variant.m3u8"
+},
+
+{
+name: "Первый канал",
+url: "http://s18209.cdn.ngenix.net/hls/CH_R03_1TV/playlist.m3u8"
+},
+
+{
+name: "Россия 1",
+url: "http://s18209.cdn.ngenix.net/hls/CH_R04_ROSSIA1/playlist.m3u8"
+},
+
+{
+name: "НТВ",
+url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_NTV/variant.m3u8"
+},
+
+{
+name: "Россия 24",
+url: "http://s18209.cdn.ngenix.net/hls/CH_R01_ROSSIA24/playlist.m3u8"
+},
+
+{
+name: "ОТР",
+url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_OTR/variant.m3u8"
+},
+
+{
+name: "Звезда",
+url: "http://s18209.cdn.ngenix.net/hls/CH_R03_ZVEZDA/playlist.m3u8"
+},
+
+{
+name: "Пятый канал",
+url: "http://zabava-htlive.cdn.ngenix.net/hls/CH_5TV/variant.m3u8"
+},
+
+{
+name: "Россия К",
+url: "http://s18209.cdn.ngenix.net/hls/CH_R02_ROSSIAK/playlist.m3u8"
+}
+
+];
 
 var tv = document.getElementById("tv");
-var button = document.getElementById("play");
+var list = document.getElementById("channels");
 
-function startTV() {
-    tv.src = stream;
-    tv.muted = false;
+var currentChannel = 0;
+
+// СОЗДАНИЕ КНОПОК
+
+channels.forEach(function(channel, index) {
+
+    var button = document.createElement("button");
+
+    button.className = "channel";
+    button.innerHTML = channel.name;
+
+    button.onclick = function() {
+        playChannel(index);
+    };
+
+    list.appendChild(button);
+
+});
+
+// ЗАПУСК КАНАЛА
+
+function playChannel(index) {
+
+    currentChannel = index;
+
+    var buttons = document.querySelectorAll(".channel");
+
+    buttons.forEach(function(button, i) {
+        button.classList.toggle("active", i === index);
+    });
+
+    tv.pause();
+    tv.src = channels[index].url;
+    tv.muted = true;
     tv.load();
 
-    var p = tv.play();
+    var promise = tv.play();
 
-    if (p && p.catch) {
-        p.catch(function() {
-            button.style.display = "block";
+    if (promise && promise.catch) {
+        promise.catch(function(error) {
+            console.log("Ошибка запуска:", error);
         });
     }
 }
 
-function autoStart() {
-    tv.src = stream;
-    tv.muted = true;
+// ВКЛЮЧИТЬ ЗВУК
 
-    var p = tv.play();
+function enableSound() {
 
-    if (p && p.catch) {
-        p.catch(function() {
-            button.style.display = "block";
-        });
+    tv.muted = false;
+
+    if (tv.paused) {
+        tv.play();
     }
 }
 
-tv.addEventListener("playing", function() {
-    button.style.display = "none";
-});
+// ПОЛНЫЙ ЭКРАН
 
-tv.addEventListener("error", function() {
-    button.style.display = "block";
-});
+function fullscreen() {
 
-autoStart();
+    if (tv.webkitEnterFullscreen) {
+        tv.webkitEnterFullscreen();
+    }
+    else if (tv.requestFullscreen) {
+        tv.requestFullscreen();
+    }
+
+}
+
+// АВТОЗАПУСК ПЕРВОГО КАНАЛА
+
+playChannel(0);
+
 </script>
 
 </body>
