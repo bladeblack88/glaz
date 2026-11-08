@@ -3,280 +3,149 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-<title>IPTV Multiview</title>
+<title>Россия — 16 веб-камер</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing:border-box; }
 
 html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  background: #111;
-  color: white;
-  font-family: Arial, sans-serif;
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  background:#101010;
+  color:white;
+  font-family:Arial,sans-serif;
 }
 
-body {
-  padding: 8px;
+header {
+  height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:4px 9px;
+  background:#202020;
+  font-size:14px;
 }
 
-h2 {
-  text-align: center;
-  margin: 5px 0 10px;
-  font-size: 20px;
-}
-
-.controls {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-button {
-  background: #1685e5;
-  border: 0;
-  color: white;
-  border-radius: 6px;
-  padding: 12px 18px;
-  font-size: 16px;
-}
-
-button:disabled {
-  opacity: 0.5;
-}
-
-#status {
-  text-align: center;
-  font-size: 13px;
-  color: #ccc;
-  margin: 8px 0;
-  min-height: 18px;
+header button {
+  background:#167bd0;
+  color:white;
+  border:0;
+  border-radius:5px;
+  padding:7px 10px;
 }
 
 #grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-rows: repeat(4, minmax(0, 1fr));
-  gap: 4px;
-  width: 100%;
-  height: calc(100vh - 105px);
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0,1fr));
+  grid-template-rows:repeat(4, minmax(0,1fr));
+  gap:3px;
+  height:calc(100vh - 42px);
+  padding:3px;
 }
 
-.tile {
-  background: #222;
-  border: 1px solid #444;
-  position: relative;
-  overflow: hidden;
-  min-width: 0;
-  min-height: 0;
+.camera {
+  position:relative;
+  min-width:0;
+  min-height:0;
+  background:#222;
+  border:1px solid #444;
+  overflow:hidden;
 }
 
-.tile video {
-  width: 100%;
-  height: 100%;
-  object-fit: fill;
-  background: black;
+.camera iframe {
+  width:100%;
+  height:100%;
+  border:0;
+  background:#111;
 }
 
-.tile span {
-  position: absolute;
-  top: 3px;
-  left: 4px;
-  z-index: 2;
-  font-size: 10px;
-  background: rgba(0,0,0,0.65);
-  padding: 2px 4px;
+.name {
+  position:absolute;
+  top:2px;
+  left:2px;
+  z-index:2;
+  background:rgba(0,0,0,.8);
+  color:white;
+  font-size:10px;
+  padding:3px 4px;
+  pointer-events:none;
 }
 
+.open {
+  position:absolute;
+  bottom:3px;
+  right:3px;
+  z-index:3;
+  font-size:10px;
+  color:white;
+  background:#167bd0;
+  padding:4px 6px;
+  text-decoration:none;
+  border-radius:3px;
+}
 </style>
 </head>
 
 <body>
 
-<h2>IPTV MULTIVIEW</h2>
-
-<div class="controls">
-  <button id="start">СТАРТ СКАНИРОВАНИЯ</button>
-  <button id="stop">СТОП</button>
-</div>
-
-<div id="status">Готов к проверке</div>
+<header>
+  <span>РОССИЯ · ГОРОДСКИЕ КАМЕРЫ</span>
+  <button onclick="location.reload()">Обновить</button>
+</header>
 
 <div id="grid"></div>
 
 <script>
-
-/*
-  ВАЖНО:
-  Это пример списка адресов.
-  Потоки не проверены и могут быть недоступны.
-  Замени URL на свои рабочие IPTV HLS-ссылки (.m3u8).
-*/
-
-var channels = [
-  {name: "Канал 1", url: "https://example.com/channel1.m3u8"},
-  {name: "Канал 2", url: "https://example.com/channel2.m3u8"},
-  {name: "Канал 3", url: "https://example.com/channel3.m3u8"},
-  {name: "Канал 4", url: "https://example.com/channel4.m3u8"},
-  {name: "Канал 5", url: "https://example.com/channel5.m3u8"},
-  {name: "Канал 6", url: "https://example.com/channel6.m3u8"},
-  {name: "Канал 7", url: "https://example.com/channel7.m3u8"},
-  {name: "Канал 8", url: "https://example.com/channel8.m3u8"},
-  {name: "Канал 9", url: "https://example.com/channel9.m3u8"},
-  {name: "Канал 10", url: "https://example.com/channel10.m3u8"},
-  {name: "Канал 11", url: "https://example.com/channel11.m3u8"},
-  {name: "Канал 12", url: "https://example.com/channel12.m3u8"},
-  {name: "Канал 13", url: "https://example.com/channel13.m3u8"},
-  {name: "Канал 14", url: "https://example.com/channel14.m3u8"},
-  {name: "Канал 15", url: "https://example.com/channel15.m3u8"},
-  {name: "Канал 16", url: "https://example.com/channel16.m3u8"}
+var cameras = [
+  ["Волжский", "https://cam-world.ru/cams/perekrestok-druzhby-i-olomoutskoy-00031459"],
+  ["Красноярск", "https://cam-world.ru/tv/tvk-6-krasnoyarsk-00031458"],
+  ["Новосибирск — площадь Пименова", "https://cam-world.ru/cams/ploschad-pimenova-00031441"],
+  ["Новосибирск — площадь Труда", "https://cam-world.ru/cams/ploschad-truda-3-00031440"],
+  ["Новосибирск — площадь Ленина", "https://cam-world.ru/cams/ploschad-lenina-krasnyy-prospekt-00031439"],
+  ["Каменск-Уральский", "https://cam-world.ru/cams/vid-na-kamensk-uralskiy-00031437"],
+  ["Барнаул", "https://cam-world.ru/cams/barnaul-vid-na-naberezhnuyu-strelka-00031178"],
+  ["Астрахань", "https://cam-world.ru/cams/astrahan-gorodskaya-kamera-kamera-9-00031165"],
+  ["Челябинск", "https://cam-world.ru/transport/chelyabinsk-dorozhnaya-kamera-kamera-8-00031147"],
+  ["Ставрополь", "https://cam-world.ru/cams/stavropol-gorodskoy-vid-kamera-9-00031139"],
+  ["Киржач — Аленино", "https://cam-world.ru/cams/derevnya-alenino-kamera-6-kirzhachskiy-rayon-2-00031177"],
+  ["Киржач — Автомир", "https://cam-world.ru/cams/avtosalon-avtomir-kirzhachskiy-rayon-00031176"],
+  ["Киржач — Селиваново", "https://cam-world.ru/cams/derevnya-selivanovo-kirzhachskiy-rayon-00031169"],
+  ["Великие Луки — площадка", "https://cam-world.ru/cams/velikie-luki-stsenicheskaya-ploschadka-velikie-luki-00031168"],
+  ["Великие Луки — площадь Ленина", "https://cam-world.ru/cams/velikie-luki-ploschad-lenina-velikie-luki-00031167"],
+  ["Великие Луки — Вечный огонь", "https://cam-world.ru/cams/velikie-luki-vechnyy-ogon-2-00031166"]
 ];
 
 var grid = document.getElementById("grid");
-var statusText = document.getElementById("status");
-var startButton = document.getElementById("start");
-var stopButton = document.getElementById("stop");
 
-var currentIndex = 0;
-var scanning = false;
-var scanId = 0;
+cameras.forEach(function(camera) {
+  var box = document.createElement("div");
+  box.className = "camera";
 
-function setStatus(text) {
-  statusText.textContent = text;
-}
+  var label = document.createElement("div");
+  label.className = "name";
+  label.textContent = camera[0];
 
-function stopScan() {
-  scanning = false;
-  scanId++;
+  var frame = document.createElement("iframe");
+  frame.src = camera[1];
+  frame.setAttribute("allow", "autoplay; fullscreen");
+  frame.setAttribute("scrolling", "no");
 
-  startButton.disabled = false;
-  setStatus("Сканирование остановлено");
-}
+  var link = document.createElement("a");
+  link.className = "open";
+  link.href = camera[1];
+  link.target = "_blank";
+  link.textContent = "Открыть";
 
-function scanNext(id) {
-
-  if (!scanning || id !== scanId) {
-    return;
-  }
-
-  if (currentIndex >= channels.length) {
-    scanning = false;
-    startButton.disabled = false;
-    setStatus("Готово. Рабочих каналов: " +
-      grid.children.length);
-    return;
-  }
-
-  var channel = channels[currentIndex];
-  currentIndex++;
-
-  setStatus(
-    "Проверка " + currentIndex + " из " +
-    channels.length + ": " + channel.name
-  );
-
-  var tile = document.createElement("div");
-  tile.className = "tile";
-
-  var label = document.createElement("span");
-  label.textContent = channel.name;
-
-  var video = document.createElement("video");
-  video.muted = true;
-  video.autoplay = true;
-  video.playsInline = true;
-  video.setAttribute("muted", "");
-  video.setAttribute("autoplay", "");
-  video.setAttribute("playsinline", "");
-  video.setAttribute("webkit-playsinline", "");
-
-  tile.appendChild(video);
-  tile.appendChild(label);
-  grid.appendChild(tile);
-
-  video.src = channel.url;
-
-  var finished = false;
-
-  function finish(success) {
-
-    if (finished) return;
-    finished = true;
-
-    if (!success) {
-      video.pause();
-      video.removeAttribute("src");
-      video.load();
-
-      if (tile.parentNode) {
-        tile.parentNode.removeChild(tile);
-      }
-    }
-
-    setTimeout(function() {
-      scanNext(id);
-    }, 500);
-  }
-
-  video.onplaying = function() {
-    finish(true);
-  };
-
-  video.onerror = function() {
-    finish(false);
-  };
-
-  video.onabort = function() {
-    finish(false);
-  };
-
-  try {
-    var result = video.play();
-
-    if (result && typeof result.catch === "function") {
-      result.catch(function() {
-        finish(false);
-      });
-    }
-  } catch (e) {
-    finish(false);
-  }
-
-  setTimeout(function() {
-    finish(false);
-  }, 12000);
-}
-
-function startScan() {
-
-  scanId++;
-  var id = scanId;
-
-  currentIndex = 0;
-  scanning = true;
-
-  grid.innerHTML = "";
-
-  startButton.disabled = true;
-
-  setStatus("Начинаю сканирование...");
-
-  scanNext(id);
-}
-
-startButton.addEventListener("click", startScan);
-stopButton.addEventListener("click", stopScan);
-
+  box.appendChild(frame);
+  box.appendChild(label);
+  box.appendChild(link);
+  grid.appendChild(box);
+});
 </script>
 
 </body>
