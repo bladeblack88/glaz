@@ -3,510 +3,279 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width, initial-scale=1,
-maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style"
-content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="IPTV">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<title>IPTV SMART 16</title>
+<title>IPTV Multiview</title>
 
 <style>
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #000;
-    color: white;
-    font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #111;
+  color: white;
+  font-family: Arial, sans-serif;
 }
 
-#header {
-    height: 38px;
-    padding: 0 7px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #151515;
-    font-size: 11px;
+body {
+  padding: 8px;
 }
 
-#info {
-    color: #00e88a;
+h2 {
+  text-align: center;
+  margin: 5px 0 10px;
+  font-size: 20px;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 button {
-    background: #167b51;
-    color: white;
-    border: 0;
-    border-radius: 4px;
-    padding: 7px 10px;
-    font-size: 11px;
+  background: #1685e5;
+  border: 0;
+  color: white;
+  border-radius: 6px;
+  padding: 12px 18px;
+  font-size: 16px;
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+#status {
+  text-align: center;
+  font-size: 13px;
+  color: #ccc;
+  margin: 8px 0;
+  min-height: 18px;
 }
 
 #grid {
-    height: calc(100% - 38px);
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    grid-auto-rows: minmax(0, 1fr);
-    gap: 2px;
-    background: #222;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+  height: calc(100vh - 105px);
 }
 
-.channel {
-    position: relative;
-    overflow: hidden;
-    background: #000;
-    min-width: 0;
-    min-height: 0;
+.tile {
+  background: #222;
+  border: 1px solid #444;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
 }
 
-video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    background: black;
+.tile video {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  background: black;
 }
 
-.channel-name {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    z-index: 2;
-    padding: 3px 5px;
-    font-size: 10px;
-    color: white;
-    background: rgba(0,0,0,.7);
-    pointer-events: none;
+.tile span {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  z-index: 2;
+  font-size: 10px;
+  background: rgba(0,0,0,0.65);
+  padding: 2px 4px;
 }
 
-.channel-status {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #00e88a;
-    background: #080808;
-    font-size: 12px;
-    text-align: center;
-    pointer-events: none;
-}
-
-#empty {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #888;
-    font-size: 13px;
-    text-align: center;
-    padding: 20px;
-}
 </style>
 </head>
 
 <body>
 
-<div id="header">
-    <span>IPTV SMART 16</span>
-    <span id="info">ГОТОВ</span>
-    <button id="start">START SCAN</button>
+<h2>IPTV MULTIVIEW</h2>
+
+<div class="controls">
+  <button id="start">СТАРТ СКАНИРОВАНИЯ</button>
+  <button id="stop">СТОП</button>
 </div>
 
-<div id="grid">
-    <div id="empty">Нажми START SCAN</div>
-</div>
+<div id="status">Готов к проверке</div>
+
+<div id="grid"></div>
 
 <script>
 
-// =====================================
-// СПИСОК КАНАЛОВ
-// =====================================
+/*
+  ВАЖНО:
+  Это пример списка адресов.
+  Потоки не проверены и могут быть недоступны.
+  Замени URL на свои рабочие IPTV HLS-ссылки (.m3u8).
+*/
 
 var channels = [
-
-{
-name: "1Almere TV",
-url: "https://d3472rjicrodic.cloudfront.net/nlpo/clr-nlpo/709d5260/index.m3u8"
-},
-{
-name: "1Twente TV",
-url: "https://ms7.mx-cd.net/dtv-11/198-989148/1Twente_TV.smil/chunklist_w954512639_b4292608_slNLD.m3u8"
-},
-{
-name: "A1 TV",
-url: "https://stream.a1mediagroep.nl/hls/a1tv.m3u8"
-},
-{
-name: "Altena TV",
-url: "https://dnx1f4sl30ba2.cloudfront.net/nlpo/clr-nlpo/altenatv/index.m3u8"
-},
-{
-name: "Assen TV",
-url: "https://takeoff.jetstre.am/?account=OmroepAssen&file=OmroepAssenTV/playlist.m3u8&output=playlist.m3u8&protocol=https&service=webdav&type=live"
-},
-{
-name: "AT5",
-url: "https://takeoff.jetstre.am/?account=atvijf&file=live&output=playlist.m3u8&protocol=https&service=wowza&type=live"
-},
-{
-name: "BEAT TV",
-url: "https://tv.beatfm.nl/live.m3u8"
-},
-{
-name: "BR6 TV",
-url: "https://58c04fb1d143f.streamlock.net/slob/slob/playlist.m3u8"
-},
-{
-name: "BTL TV",
-url: "https://livecdn.live247stream.com/btl/tv/playlist.m3u8"
-},
-{
-name: "Dance TV",
-url: "https://m1b2.worldcast.tv/dancetelevisionone/2/dancetelevisionone.m3u8"
-},
-{
-name: "DeepHouse",
-url: "https://eu-nl-012.worldcast.tv/dancetelevisiontwo/dancetelevisiontwo.m3u8"
-},
-{
-name: "Helmond",
-url: "https://ms2.mx-cd.net/tv/228-1864150/Omroep_Helmond.smil/playlist.m3u8"
-},
-{
-name: "DTV Den Bosch",
-url: "https://rrr.sz.xlcdn.com/?account=dtvmaasland&file=dtv2&output=playlist.m3u8&protocol=https&service=wowza&type=live"
-},
-{
-name: "DTV Maashorst",
-url: "https://rrr.sz.xlcdn.com/?account=dtvmaasland&file=dtv3&output=playlist.m3u8&protocol=https&service=wowza&type=live"
-},
-{
-name: "Haarlem105",
-url: "https://d2qm50imcbcfqx.cloudfront.net/nlpo/clr-nlpo/haarlem105/index.m3u8"
-},
-{
-name: "NH Nieuws",
-url: "https://takeoff.jetstre.am/?account=nhnieuws&file=live&output=playlist.m3u8&protocol=https&service=wowza&type=live"
-}
-
+  {name: "Канал 1", url: "https://example.com/channel1.m3u8"},
+  {name: "Канал 2", url: "https://example.com/channel2.m3u8"},
+  {name: "Канал 3", url: "https://example.com/channel3.m3u8"},
+  {name: "Канал 4", url: "https://example.com/channel4.m3u8"},
+  {name: "Канал 5", url: "https://example.com/channel5.m3u8"},
+  {name: "Канал 6", url: "https://example.com/channel6.m3u8"},
+  {name: "Канал 7", url: "https://example.com/channel7.m3u8"},
+  {name: "Канал 8", url: "https://example.com/channel8.m3u8"},
+  {name: "Канал 9", url: "https://example.com/channel9.m3u8"},
+  {name: "Канал 10", url: "https://example.com/channel10.m3u8"},
+  {name: "Канал 11", url: "https://example.com/channel11.m3u8"},
+  {name: "Канал 12", url: "https://example.com/channel12.m3u8"},
+  {name: "Канал 13", url: "https://example.com/channel13.m3u8"},
+  {name: "Канал 14", url: "https://example.com/channel14.m3u8"},
+  {name: "Канал 15", url: "https://example.com/channel15.m3u8"},
+  {name: "Канал 16", url: "https://example.com/channel16.m3u8"}
 ];
 
-// =====================================
-// НАСТРОЙКИ
-// =====================================
-
-var TEST_TIMEOUT = 15000;
-var RETRY_INTERVAL = 60000;
-
 var grid = document.getElementById("grid");
-var info = document.getElementById("info");
+var statusText = document.getElementById("status");
+var startButton = document.getElementById("start");
+var stopButton = document.getElementById("stop");
 
-var states = [];
-var position = 0;
-var scanRunning = false;
-var retryTimer = null;
-var scanGeneration = 0;
+var currentIndex = 0;
+var scanning = false;
+var scanId = 0;
 
-// =====================================
-// ИНФОРМАЦИЯ
-// =====================================
-
-function updateInfo() {
-
-    var working = 0;
-
-    states.forEach(function(s) {
-        if (s.status === "working") working++;
-    });
-
-    info.textContent =
-        "РАБОТАЕТ: " + working + "/" + channels.length;
+function setStatus(text) {
+  statusText.textContent = text;
 }
 
-// =====================================
-// СОЗДАНИЕ ВИДЕО
-// =====================================
+function stopScan() {
+  scanning = false;
+  scanId++;
 
-function createPlayer(index) {
-
-    var ch = channels[index];
-
-    var box = document.createElement("div");
-    box.className = "channel";
-
-    var label = document.createElement("div");
-    label.className = "channel-name";
-    label.textContent = ch.name;
-
-    var status = document.createElement("div");
-    status.className = "channel-status";
-    status.textContent = "ПРОВЕРКА...";
-
-    var video = document.createElement("video");
-
-    video.muted = true;
-    video.defaultMuted = true;
-    video.autoplay = false;
-    video.playsInline = true;
-    video.preload = "none";
-
-    video.setAttribute("muted", "");
-    video.setAttribute("playsinline", "");
-    video.setAttribute("webkit-playsinline", "");
-
-    box.appendChild(video);
-    box.appendChild(status);
-    box.appendChild(label);
-
-    return {
-        box: box,
-        video: video,
-        status: status
-    };
+  startButton.disabled = false;
+  setStatus("Сканирование остановлено");
 }
 
-// =====================================
-// ПРОВЕРКА ОДНОГО КАНАЛА
-// =====================================
+function scanNext(id) {
 
-function testChannel(index, generation, callback) {
+  if (!scanning || id !== scanId) {
+    return;
+  }
 
-    if (generation !== scanGeneration) return;
+  if (currentIndex >= channels.length) {
+    scanning = false;
+    startButton.disabled = false;
+    setStatus("Готово. Рабочих каналов: " +
+      grid.children.length);
+    return;
+  }
 
-    var ch = channels[index];
+  var channel = channels[currentIndex];
+  currentIndex++;
 
-    var player = createPlayer(index);
+  setStatus(
+    "Проверка " + currentIndex + " из " +
+    channels.length + ": " + channel.name
+  );
 
-    states[index].status = "testing";
-    states[index].player = player;
+  var tile = document.createElement("div");
+  tile.className = "tile";
 
-    var empty = document.getElementById("empty");
-    if (empty) empty.remove();
+  var label = document.createElement("span");
+  label.textContent = channel.name;
 
-    // Временно показываем тестируемый канал
-    grid.appendChild(player.box);
+  var video = document.createElement("video");
+  video.muted = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.setAttribute("muted", "");
+  video.setAttribute("autoplay", "");
+  video.setAttribute("playsinline", "");
+  video.setAttribute("webkit-playsinline", "");
 
-    updateInfo();
+  tile.appendChild(video);
+  tile.appendChild(label);
+  grid.appendChild(tile);
 
-    var finished = false;
-    var timeout;
+  video.src = channel.url;
 
-    function finish(success) {
+  var finished = false;
 
-        if (finished) return;
+  function finish(success) {
 
-        finished = true;
-        clearTimeout(timeout);
+    if (finished) return;
+    finished = true;
 
-        player.video.onplaying = null;
-        player.video.onerror = null;
-        player.video.onloadeddata = null;
+    if (!success) {
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
 
-        if (success) {
-
-            states[index].status = "working";
-            player.status.style.display = "none";
-
-            // Следим за потерей потока
-            player.video.onerror = function() {
-                removeFailed(index);
-            };
-
-        } else {
-
-            states[index].status = "failed";
-
-            player.video.pause();
-            player.video.removeAttribute("src");
-            player.video.load();
-
-            if (player.box.parentNode) {
-                player.box.parentNode.removeChild(player.box);
-            }
-
-            states[index].player = null;
-        }
-
-        updateInfo();
-
-        if (callback) callback(success);
+      if (tile.parentNode) {
+        tile.parentNode.removeChild(tile);
+      }
     }
 
-    player.video.onplaying = function() {
-        finish(true);
-    };
+    setTimeout(function() {
+      scanNext(id);
+    }, 500);
+  }
 
-    player.video.onerror = function() {
+  video.onplaying = function() {
+    finish(true);
+  };
+
+  video.onerror = function() {
+    finish(false);
+  };
+
+  video.onabort = function() {
+    finish(false);
+  };
+
+  try {
+    var result = video.play();
+
+    if (result && typeof result.catch === "function") {
+      result.catch(function() {
         finish(false);
-    };
-
-    timeout = setTimeout(function() {
-        finish(false);
-    }, TEST_TIMEOUT);
-
-    player.video.src = ch.url;
-    player.video.load();
-
-    var result = player.video.play();
-
-    if (result && result.catch) {
-        result.catch(function() {
-            finish(false);
-        });
+      });
     }
+  } catch (e) {
+    finish(false);
+  }
+
+  setTimeout(function() {
+    finish(false);
+  }, 12000);
 }
-
-// =====================================
-// УДАЛЕНИЕ НЕРАБОЧЕГО КАНАЛА
-// =====================================
-
-function removeFailed(index) {
-
-    var state = states[index];
-
-    if (!state || state.status !== "working") return;
-
-    state.status = "failed";
-
-    if (state.player) {
-
-        state.player.video.pause();
-
-        if (state.player.box.parentNode) {
-            state.player.box.parentNode.removeChild(
-                state.player.box
-            );
-        }
-
-        state.player = null;
-    }
-
-    updateInfo();
-}
-
-// =====================================
-// ПОСЛЕДОВАТЕЛЬНОЕ СКАНИРОВАНИЕ
-// =====================================
-
-function scanNext(generation) {
-
-    if (generation !== scanGeneration) return;
-
-    if (position >= channels.length) {
-
-        scanRunning = false;
-
-        info.textContent += " | ГОТОВО";
-
-        return;
-    }
-
-    var index = position++;
-
-    testChannel(index, generation, function() {
-
-        // Небольшая пауза между проверками
-        setTimeout(function() {
-            scanNext(generation);
-        }, 700);
-
-    });
-}
-
-// =====================================
-// ПОВТОРНАЯ ПРОВЕРКА
-// =====================================
-
-function retryFailed() {
-
-    if (scanRunning) return;
-
-    var failed = [];
-
-    states.forEach(function(state, index) {
-        if (state.status === "failed") {
-            failed.push(index);
-        }
-    });
-
-    if (failed.length === 0) return;
-
-    scanRunning = true;
-
-    var generation = scanGeneration;
-
-    function next(i) {
-
-        if (generation !== scanGeneration) return;
-
-        if (i >= failed.length) {
-            scanRunning = false;
-            return;
-        }
-
-        testChannel(failed[i], generation, function() {
-            setTimeout(function() {
-                next(i + 1);
-            }, 700);
-        });
-    }
-
-    next(0);
-}
-
-// =====================================
-// ПОЛНЫЙ ЗАПУСК
-// =====================================
 
 function startScan() {
 
-    scanGeneration++;
+  scanId++;
+  var id = scanId;
 
-    var generation = scanGeneration;
+  currentIndex = 0;
+  scanning = true;
 
-    clearTimeout(retryTimer);
+  grid.innerHTML = "";
 
-    scanRunning = true;
-    position = 0;
+  startButton.disabled = true;
 
-    states = channels.map(function() {
-        return {
-            status: "waiting",
-            player: null
-        };
-    });
+  setStatus("Начинаю сканирование...");
 
-    grid.innerHTML = "";
-
-    info.textContent = "НАЧИНАЮ ПРОВЕРКУ";
-
-    scanNext(generation);
-
-    retryTimer = setInterval(function() {
-        retryFailed();
-    }, RETRY_INTERVAL);
+  scanNext(id);
 }
 
-// =====================================
-// КНОПКА ЗАПУСКА
-// =====================================
-
-document.getElementById("start").onclick = function() {
-    startScan();
-};
+startButton.addEventListener("click", startScan);
+stopButton.addEventListener("click", stopScan);
 
 </script>
 
